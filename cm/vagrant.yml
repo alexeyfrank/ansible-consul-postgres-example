@@ -8,6 +8,9 @@
     docker_ip: "172.17.42.1"
     consul_data_dir: "/var/tmp/consul"
 
+    postgres_user: web_test
+    postgres_password: 12345
+
   roles:
     # - { role: angstwad.docker_ubuntu, tags: [docker,n1,n2], become: yes }
 
@@ -39,7 +42,13 @@
       tags: [upstart, registrator, n2]
 
     - template:
-       src: templates/postgres.upstart.conf.j2
+       src: templates/n1.postgres.upstart.conf.j2
        dest: /etc/init/postgres.conf
       become: yes
-      tags: [upstart, postgres, n1, n2]
+      tags: [upstart, postgres, n1]
+
+    - template:
+       src: templates/n2.postgres.upstart.conf.j2
+       dest: /etc/init/postgres.conf
+      become: yes
+      tags: [upstart, postgres, n2]

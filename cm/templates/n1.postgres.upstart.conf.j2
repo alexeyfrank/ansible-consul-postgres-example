@@ -21,6 +21,9 @@ end script
 
 script
     docker run --name postgres \
+           -e "SERVICE_NAME=postgres-master" \
+           -e "POSTGRES_USER={{ postgres_user }}" \
+           -e "POSTGRES_PASSWORD={{ postgres_password }}" \
            -p 0.0.0.0:5432:5432 \
            -v /volumes/data:/var/lib/postgresql/data \
            postgres:9.4

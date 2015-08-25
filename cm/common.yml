@@ -1,0 +1,32 @@
+- group: name={{ item }} state=present system=yes
+  become: yes
+  with_items:
+    - docker
+  tags: [n1,n2]
+
+- name: create run user
+  become: yes
+  user: name={{ run_user }} shell=/bin/bash groups=docker
+  tags: [n1,n2]
+
+- file: path=/home/{{ run_user }}/.ssh owner={{ run_user }} state=directory
+  become: yes
+  tags: [n1,n2]
+
+- name: set locale
+  become: yes
+  lineinfile:
+    dest: /etc/environment
+    regexp: 'LC_ALL'
+    line: 'LC_ALL="en_US.UTF-8"'
+    state: present
+  tags: [n1,n2]
+
+- shell: apt-get install -y linux-image-extra-$(uname -r)
+  become: yes
+  tags: [apt,aufs,n1,n2]
+
+- shell: echo "DOCKER_OPTS='--dns 172.17.42.1 --dns 8.8.8.8 --dns-search service.consul'" >> /etc/default/docker
+  become: yes
+  tags: [n1, n2]
+

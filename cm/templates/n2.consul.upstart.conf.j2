@@ -28,14 +28,14 @@ script
         -p {{ n2_ip }}:8302:8302/udp   \
         -p {{ n2_ip }}:8400:8400   \
         -p {{ n2_ip }}:8500:8500   \
-        -p {{ n2_ip }}:8600:8600   \
-        -p {{ docker_ip }}:53:53    \
-        -p {{ docker_ip }}:53:53/udp    \
+        -p {{ docker_ip }}:53:8600   \
+        -p {{ docker_ip }}:53:8600/udp   \
         --name consul \
         wehkamp/consul:0.5.2 -server \
             -advertise {{ n2_ip }} \
             -ui-dir /ui \
             -join {{ n1_ip }}
+            -log-level debug
 end script
 
 

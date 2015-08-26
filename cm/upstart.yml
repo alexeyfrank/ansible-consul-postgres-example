@@ -34,5 +34,14 @@
   become: yes
   tags: [upstart, postgres, n2]
 
+- template:
+   src: templates/n1.pgpool.upstart.conf.j2
+   dest: /etc/init/pgpool.conf
+  become: yes
+  tags: [upstart, pgpool, n1]
 
-
+- template:
+   src: templates/n2.pgpool.upstart.conf.j2
+   dest: /etc/init/pgpool.conf
+  become: yes
+  tags: [upstart, pgpool, n2]

@@ -1,0 +1,15 @@
+- file: path={{ pgpool_data }} owner={{ run_user }} state=directory
+  become: yes
+  tags: [n1,n2]
+
+- template:
+   src: templates/master/{{ item }}.j2
+   dest: /etc/pgpool2/{{ item }}
+  become: yes
+  tags: [upstart, pgpool, n1, n2]
+  with_items:
+    - pcp.conf
+    - pgpool.conf
+    - pool_hba.conf
+    - failover.sh
+    - pool_passwd

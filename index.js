@@ -1,7 +1,7 @@
 var http = require('http');
 var pg = require('pg');
 
-var conString = "postgres://username:password@postgres.service.consul/database";
+var conString = "postgres://web_test:12345@postgres-master.service.consul/web_test";
 
 var client = new pg.Client(conString);
 

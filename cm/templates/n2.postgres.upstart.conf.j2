@@ -12,7 +12,6 @@ respawn limit 3 30
 
 pre-start script
     /usr/bin/docker rm -f postgres || true
-    docker pull postgres:9.4
 end script
 
 pre-stop script
@@ -20,13 +19,20 @@ pre-stop script
 end script
 
 script
-    docker run --name postgres \
-           -e "SERVICE_NAME=postgres-slave" \
-           -e "POSTGRES_USER={{ postgres_user }}" \
-           -e "POSTGRES_PASSWORD={{ postgres_password }}" \
-           -p 0.0.0.0:5432:5432 \
-           -v /volumes/data:/var/lib/postgresql/data \
-           postgres:9.4
+    docker run --name='postgres' \
+               -e "SERVICE_NAME=postgres-slave" \
+               -e 'PSQL_MODE=slave' \
+               -e 'PSQL_TRUST_LOCALNET=true' \
+               -e 'REPLICATION_USER={{ postgres_replication_user }}' \
+               -e 'REPLICATION_PASS={{ postgres_replication_password }}' \
+               -e 'REPLICATION_HOST={{ postgres_master_ip }}' \
+               -e 'REPLICATION_PORT=5432' \
+               -e 'DB_NAME={{ postgres_database }}' \
+               -e 'DB_USER={{ postgres_user }}' \
+               -e 'DB_PASS={{ postgres_password }}' \
+               -p 0.0.0.0:5432:5432 \
+               -v {{ postgres_data }}:/var/lib/postgresql \
+               sameersbn/postgresql:9.4-3
 end script
 
 

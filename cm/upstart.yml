@@ -1,0 +1,38 @@
+- template:
+   src: templates/n1.consul.upstart.conf.j2
+   dest: /etc/init/consul.conf
+  become: yes
+  tags: [upstart, consul, n1]
+
+- template:
+   src: templates/n2.consul.upstart.conf.j2
+   dest: /etc/init/consul.conf
+  become: yes
+  tags: [upstart, consul, n2]
+
+- template:
+   src: templates/n1.registrator.upstart.conf.j2
+   dest: /etc/init/registrator.conf
+  become: yes
+  tags: [upstart, registrator, n1]
+
+- template:
+   src: templates/n2.registrator.upstart.conf.j2
+   dest: /etc/init/registrator.conf
+  become: yes
+  tags: [upstart, registrator, n2]
+
+- template:
+   src: templates/n1.postgres.upstart.conf.j2
+   dest: /etc/init/postgres.conf
+  become: yes
+  tags: [upstart, postgres, n1]
+
+- template:
+   src: templates/n2.postgres.upstart.conf.j2
+   dest: /etc/init/postgres.conf
+  become: yes
+  tags: [upstart, postgres, n2]
+
+
+

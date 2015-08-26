@@ -9,46 +9,27 @@
     consul_data_dir: "/var/tmp/consul"
 
     postgres_user: web_test
+    postgres_database: web_test
     postgres_password: 12345
+    postgres_data: /volumes/postgres_data
+    postgres_replication_user: replication
+    postgres_replication_password: replication_password
+    postgres_master_ip: "{{ n1_ip }}"
 
   roles:
     # - { role: angstwad.docker_ubuntu, tags: [docker,n1,n2], become: yes }
 
   tasks:
     # - include: common.yml
+    - include: upstart.yml
+    - include: postgres.yml
+      tags: [n1]
+      vars:
+        role: master
+        master_ip: "{{ n1_ip }}"
+        slave_ip: "{{ n2_ip }}"
 
-    - template:
-       src: templates/n1.consul.upstart.conf.j2
-       dest: /etc/init/consul.conf
-      become: yes
-      tags: [upstart, consul, n1]
+    # - postgresql_db: name={{postgres_user}}
+    #   tags: [n1]
 
-    - template:
-       src: templates/n2.consul.upstart.conf.j2
-       dest: /etc/init/consul.conf
-      become: yes
-      tags: [upstart, consul, n2]
 
-    - template:
-       src: templates/n1.registrator.upstart.conf.j2
-       dest: /etc/init/registrator.conf
-      become: yes
-      tags: [upstart, registrator, n1]
-
-    - template:
-       src: templates/n2.registrator.upstart.conf.j2
-       dest: /etc/init/registrator.conf
-      become: yes
-      tags: [upstart, registrator, n2]
-
-    - template:
-       src: templates/n1.postgres.upstart.conf.j2
-       dest: /etc/init/postgres.conf
-      become: yes
-      tags: [upstart, postgres, n1]
-
-    - template:
-       src: templates/n2.postgres.upstart.conf.j2
-       dest: /etc/init/postgres.conf
-      become: yes
-      tags: [upstart, postgres, n2]

@@ -4,14 +4,20 @@
     - docker
   tags: [n1,n2]
 
-- name: create run user
+- name: create users
   become: yes
-  user: name={{ run_user }} shell=/bin/bash groups=docker
+  user: name={{ item }} shell=/bin/bash groups=docker
   tags: [n1,n2]
+  with_items:
+    - "{{ run_user }}"
+    - "{{ postgres_replication_user }}"
 
-- file: path=/home/{{ run_user }}/.ssh owner={{ run_user }} state=directory
+- file: path=/home/{{ item }}/.ssh owner={{ item }} state=directory
   become: yes
   tags: [n1,n2]
+  with_items:
+    - "{{ run_user }}"
+    - "{{ postgres_replication_user }}"
 
 - name: set locale
   become: yes
@@ -30,3 +36,32 @@
   become: yes
   tags: [n1, n2]
 
+- copy: src=files/{{ item }} dest=/home/{{ run_user }}/.ssh/{{ item }} owner={{ run_user }} mode=0600
+  become: yes
+  with_items:
+    - id_rsa
+    - id_rsa.pub
+  tags: [keys,n1,n2]
+
+- copy: src=files/{{ item }} dest=/home/{{ postgres_replication_user }}/.ssh/{{ item }} owner={{ postgres_replication_user }} mode=0600
+  become: yes
+  with_items:
+    - id_rsa
+    - id_rsa.pub
+  tags: [keys,n1,n2]
+
+- name: Add ssh user keys
+  become: yes
+  authorized_key:
+    user: '{{ item }}'
+    key: "{{ lookup('file', 'files/id_rsa.pub') }}"
+  tags: [keys, n1, n2]
+  with_items:
+    - "{{ run_user }}"
+    - "{{ postgres_replication_user }}"
+    - root
+
+- shell: docker pull wehkamp/consul:0.5.2
+  tags: [n1, n2]
+- shell: docker pull gliderlabs/registrator:latest
+  tags: [n1, n2]

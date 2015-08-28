@@ -23,5 +23,8 @@ script
                -e "SERVICE_NAME=pgpool" \
                -p 0.0.0.0:9999:9999 \
                -v {{ pgpool_data }}:{{ pgpool_data }} \
-               alexeyfrank/pgpool2 pgpool -n -d
+               alexeyfrank/pgpool2 pgpool -n -d \
+                -a /etc/pgpool2/pg_hba.conf \
+                -f /etc/pgpool2/pgpool.conf \
+                -F /etc/pgpool2/pcp.conf \
 end script

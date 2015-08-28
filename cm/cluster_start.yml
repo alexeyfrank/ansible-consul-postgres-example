@@ -1,0 +1,10 @@
+- hosts: all
+  gather_facts: yes
+
+  tasks:
+    - shell: sudo service consul restart
+      tags: [n1, n2]
+    - shell: sudo service postgres restart
+      tags: [n1]
+
+

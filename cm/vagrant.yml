@@ -19,12 +19,17 @@
 
     pgpool_data: /etc/pgpool2
 
+    consul_scripts_dir: /etc/consul/scripts
+
   roles:
+    - { role: postgresql, tags: [n1, n2], become: yes }
     # - { role: angstwad.docker_ubuntu, tags: [docker,n1,n2], become: yes }
 
   tasks:
     # - include: common.yml
-    # - include: upstart.yml
-    - include: pgpool.yml
+    - include: upstart.yml
+    # - include: pgpool.yml
+
+    # - include: start_postgres_master.yml
 
 

@@ -1,0 +1,25 @@
+- name: update postgres role
+  become: yes
+  lineinfile:
+    regexp: "POSTGRES_ROLE"
+    line: "POSTGRES_ROLE=master"
+    dest: /etc/environment
+    backup: yes
+    state: present
+  tags: n1
+
+# - shell: sudo service postgres restart
+#   tags: n1
+
+- name: update postgres role
+  become: yes
+  lineinfile:
+    regexp: "POSTGRES_ROLE"
+    line: "POSTGRES_ROLE=slave"
+    dest: /etc/environment
+    backup: yes
+    state: present
+  tags: n2
+
+# - shell: sudo service postgres restart
+#   tags: n2

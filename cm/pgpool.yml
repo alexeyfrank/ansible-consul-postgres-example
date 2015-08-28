@@ -1,6 +1,10 @@
 - file: path={{ pgpool_data }} owner={{ run_user }} state=directory
   become: yes
   tags: [n1,n2]
+- file: path=/etc/postgresql/9.4/main owner={{ run_user }} state=directory
+  become: yes
+  tags: [n1,n2]
+
 
 - template:
    src: templates/master/{{ item }}.j2
@@ -13,3 +17,11 @@
     - pool_hba.conf
     - failover.sh
     - pool_passwd
+
+- template:
+   src: templates/master/{{ item }}.j2
+   dest: /etc/postgresql/9.4/main/{{ item }}
+  become: yes
+  tags: [upstart, pgpool, n1, n2]
+  with_items:
+    - pg_hba.conf

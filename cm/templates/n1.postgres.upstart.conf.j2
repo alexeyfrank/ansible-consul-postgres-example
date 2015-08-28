@@ -30,6 +30,7 @@ script
                -e 'DB_PASS={{ postgres_password }}' \
                -p 0.0.0.0:5432:5432 \
                -v {{ postgres_data }}:/var/lib/postgresql \
+               -v /etc/postgresql/9.4/main/pg_hba.conf:/etc/postgresql/9.4/main/pg_hba.conf \
                sameersbn/postgresql:9.4-3
 end script
 

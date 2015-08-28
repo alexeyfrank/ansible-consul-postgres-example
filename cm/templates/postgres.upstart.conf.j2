@@ -1,0 +1,69 @@
+description "Postgres"
+
+start on filesystem or runlevel [2345]
+stop on runlevel [!2345]
+
+env HOME=/home/{{ run_user }}
+setuid {{ run_user }}
+setgid docker
+
+respawn
+respawn limit 3 30
+
+pre-start script
+    /usr/bin/docker rm -f postgres || true
+end script
+
+pre-stop script
+    /usr/bin/docker rm -f postgres || true
+end script
+
+script
+    . /etc/environment
+    export POSTGRES_ROLE
+
+    if [ ${POSTGRES_ROLE} = 'master' ] ; then
+        docker run --name='postgres' \
+                   -e "SERVICE_NAME=postgres-master" \
+                   -p 0.0.0.0:5432:5432 \
+                   -v {{ postgres_data }}:/var/lib/postgresql/data \
+                   postgres:9.4
+    fi
+
+    if [ ${POSTGRES_ROLE} = 'slave' ] ; then
+        # ATTENTION!!!
+        sudo rm -rf {{ postgres_data }}/*
+
+        docker run \
+                   -v {{ postgres_data }}:/var/lib/postgresql/data \
+                   -e "PGPASSWORD={{postgres_replication_password}}" \
+                   postgres:9.4 \
+                    pg_basebackup -D /var/lib/postgresql/data  \
+                                  -h {{ postgres_master_ip }} \
+                                  -U {{ postgres_replication_user }}  \
+                                  -w -v -P
+
+        docker run -v {{ postgres_data }}:/var/lib/postgresql/data \
+            postgres:9.4 \
+            /bin/bash -c "
+            echo <<EOT
+            standby_mode = 'on'
+            primary_conninfo = 'host={{postgres_master_ip}} port=5432 user={{ postgres_replication_user }} password={{ postgres_replication_password }}'
+            trigger_file = '/var/lib/postgresql/data/postgresql.trigger'
+            EOT > /var/lib/postgresql/data/recovery.conf "
+
+        docker run -v {{ postgres_data }}:/var/lib/postgresql/data \
+            postgres:9.4 \
+            chmod 0700 -R /var/lib/postgresql/data
+
+        docker run --name='postgres' \
+                   -e "SERVICE_NAME=postgres-slave" \
+                   -p 0.0.0.0:5432:5432 \
+                   -v {{ postgres_data }}:/var/lib/postgresql/data \
+                   -v /var/tmp/recovery.conf:/var/lib/postgresql/data/recovery.conf \
+                   postgres:9.4
+    fi
+end script
+
+
+

@@ -21,7 +21,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     n1.vm.provision 'ansible' do |ansible|
       ansible.playbook = 'cm/vagrant.yml'
       ansible.tags = 'n1'
-      ansible.verbose = 'vvvv'
+      # ansible.verbose = 'vvvv'
     end
 
   end
@@ -40,7 +40,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     n2.vm.provision 'ansible' do |ansible|
       ansible.playbook = 'cm/vagrant.yml'
       ansible.tags = 'n2'
-      ansible.verbose = 'vvvv'
+      # ansible.verbose = 'vvvv'
     end
   end
 end

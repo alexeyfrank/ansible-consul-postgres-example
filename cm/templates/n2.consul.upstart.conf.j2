@@ -30,6 +30,7 @@ script
         -p {{ n2_ip }}:8500:8500   \
         -p {{ docker_ip }}:53:8600   \
         -p {{ docker_ip }}:53:8600/udp   \
+        -v {{ consul_scripts_dir }}:/scripts \
         --name consul \
         wehkamp/consul:0.5.2 -server \
             -advertise {{ n2_ip }} \

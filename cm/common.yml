@@ -19,6 +19,12 @@
     - "{{ run_user }}"
     - "{{ postgres_replication_user }}"
 
+- file: path={{ consul_scripts_dir }} owner={{ item }} state=directory
+  become: yes
+  tags: [n1,n2]
+  with_items:
+    - "{{ run_user }}"
+
 - name: set locale
   become: yes
   lineinfile:

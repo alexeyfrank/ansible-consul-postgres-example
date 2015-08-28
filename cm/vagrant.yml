@@ -22,7 +22,7 @@
     consul_scripts_dir: /etc/consul/scripts
 
   roles:
-    - { role: postgresql, tags: [n1, n2], become: yes }
+    - { role: postgresql, tags: [n1, n2], become: yes, type: master }
     # - { role: angstwad.docker_ubuntu, tags: [docker,n1,n2], become: yes }
 
   tasks:

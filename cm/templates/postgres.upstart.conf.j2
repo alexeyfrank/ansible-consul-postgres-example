@@ -31,8 +31,6 @@ script
     fi
 
     if [ ${POSTGRES_ROLE} = 'slave' ] ; then
-        # ATTENTION!!!
-        sudo rm -rf {{ postgres_data }}/*
 
         docker run \
                    -v {{ postgres_data }}:/var/lib/postgresql/data \

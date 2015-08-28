@@ -1,53 +1,58 @@
-# - name: pull postgres image
-#   shell: docker pull postgres:9.4
-#   become: yes
+- name: pull postgres image
+  shell: docker pull postgres:9.4
+  become: yes
 
-# - name: init db on master
-#   shell: docker run -v {{ postgres_data }}:/var/lib/postgresql/data \
-#             postgres:9.4 chown -R postgres /var/lib/postgresql/data
-#   become: yes
+- name: init db on master
+  shell: docker run -v {{ postgres_data }}:/var/lib/postgresql/data \
+            postgres:9.4 chown -R postgres /var/lib/postgresql/data
+  become: yes
 
-# - name: init db on master
-#   shell: docker run -v {{ postgres_data }}:/var/lib/postgresql/data \
-#             postgres:9.4 chmod g+s /run/postgresql
-#   become: yes
+- name: init db on master
+  shell: docker run -v {{ postgres_data }}:/var/lib/postgresql/data \
+            postgres:9.4 chmod g+s /run/postgresql
+  become: yes
 
-# - name: init db on master
-#   shell: docker run -v {{ postgres_data }}:/var/lib/postgresql/data \
-#             postgres:9.4 chown -R postgres:postgres /run/postgresql
-#   become: yes
+- name: init db on master
+  shell: docker run -v {{ postgres_data }}:/var/lib/postgresql/data \
+            postgres:9.4 chown -R postgres:postgres /run/postgresql
+  become: yes
 
-# - name: init db on master
-#   shell: docker run -v {{ postgres_data }}:/var/lib/postgresql/data \
-#             postgres:9.4 /bin/bash -c 'if [ -z "$(ls -A "$PGDATA")" ]; then gosu postgres initdb ; fi'
-#   become: yes
+- name: init db on master
+  shell: docker run -v {{ postgres_data }}:/var/lib/postgresql/data \
+            postgres:9.4 /bin/bash -c 'if [ -z "$(ls -A "$PGDATA")" ]; then gosu postgres initdb ; fi'
+  become: yes
+  when: type == "master"
 
-# - name: run postgres on master
-#   shell: docker stop postgres-init; \
-#          docker rm postgres-init; \
-#          docker run -v {{ postgres_data }}:/var/lib/postgresql/data \
-#                     --name postgres-init \
-#                     -d \
-#                     postgres:9.4
-#   become: yes
+- name: run postgres on master
+  shell: docker stop postgres-init; \
+         docker rm postgres-init; \
+         docker run -v {{ postgres_data }}:/var/lib/postgresql/data \
+                    --name postgres-init \
+                    -d \
+                    postgres:9.4
+  become: yes
+  when: type == "master"
 
-# - name: create database
-#   shell: docker exec postgres-init psql -U postgres -c \
-#          "CREATE DATABASE {{ postgres_database }};" \
-#          &> /dev/null
-#   become: yes
+- name: create database
+  shell: docker exec postgres-init psql -U postgres -c \
+         "CREATE DATABASE {{ postgres_database }};" \
+         &> /dev/null
+  become: yes
+  when: type == "master"
 
 - name: create user
   shell: docker exec postgres-init psql -U postgres -c \
          "CREATE ROLE {{postgres_user}}  WITH LOGIN SUPERUSER PASSWORD '{{ postgres_password }}';" \
          &> /dev/null
   become: yes
+  when: type == "master"
 
-# - name: create replication user
-#   shell: docker exec postgres-init psql -U postgres -c \
-#          "CREATE ROLE {{postgres_replication_user}}   WITH REPLICATION LOGIN ENCRYPTED PASSWORD  '{{ postgres_replication_password }}';" \
-#          &> /dev/null
-#   become: yes
+- name: create replication user
+  shell: docker exec postgres-init psql -U postgres -c \
+         "CREATE ROLE {{postgres_replication_user}}   WITH REPLICATION LOGIN ENCRYPTED PASSWORD  '{{ postgres_replication_password }}';" \
+         &> /dev/null
+  become: yes
+  when: type == "master"
 
 - name: change postgresql.conf
   lineinfile: dest={{postgres_data}}/postgresql.conf line="{{item}}"
@@ -58,6 +63,7 @@
     - 'hot_standby = on'
     - 'max_wal_senders = 5'
     - 'max_replication_slots = 5'
+  when: type == "master"
 
 - name: change pg_hba.conf
   lineinfile: dest={{postgres_data}}/pg_hba.conf line="{{item}}"
@@ -65,3 +71,4 @@
   with_items:
     - 'host    all             all             0.0.0.0/0               md5'
     - 'host    replication     {{ postgres_replication_user }}       0.0.0.0/0               md5'
+  when: type == "master"

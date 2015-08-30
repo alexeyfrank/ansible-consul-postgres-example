@@ -46,7 +46,7 @@ script
             /bin/bash -c "
             echo <<EOT
             standby_mode = 'on'
-            primary_conninfo = 'host={{postgres_master_ip}} port=5432 user={{ postgres_replication_user }} password={{ postgres_replication_password }}'
+            primary_conninfo = 'host={{postgres_master_dns}} port=5432 user={{ postgres_replication_user }} password={{ postgres_replication_password }}'
             trigger_file = '/var/lib/postgresql/data/postgresql.trigger'
             EOT > /var/lib/postgresql/data/recovery.conf "
 
@@ -55,7 +55,7 @@ script
             chmod 0700 -R /var/lib/postgresql/data
 
         docker run --name='postgres' \
-                   -e "SERVICE_NAME=postgres-slave" \
+                   -e "SERVICE_NAME=postgres-$POSTGRES_ROLE" \
                    -p 0.0.0.0:5432:5432 \
                    -v {{ postgres_data }}:/var/lib/postgresql/data \
                    -v /var/tmp/recovery.conf:/var/lib/postgresql/data/recovery.conf \

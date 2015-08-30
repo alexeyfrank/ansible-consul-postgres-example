@@ -1,0 +1,68 @@
+# - apt: name=unzip state=present update_cache=yes
+#   become: yes
+#   tags: [consul]
+
+# - shell: cd /usr/local/bin && rm consul || true && rm 0.5.2_linux_amd64.zip || true && \
+#          wget https://dl.bintray.com/mitchellh/consul/0.5.2_linux_amd64.zip && \
+#          unzip 0.5.2_linux_amd64.zip && rm 0.5.2_linux_amd64.zip
+#   become: yes
+#   tags: [consul]
+
+# - group: name={{ consul_group }} state=present system=yes
+#   become: yes
+#   tags: [consul]
+
+# - name: create users
+#   become: yes
+#   user: name={{ consul_user }} shell=/bin/bash groups={{ consul_group }}
+#   tags: [consul]
+
+# - shell: cd /home/{{ consul_user }} && rm -r dist || true && rm 0.5.2_web_ui.zip || true && \
+#          wget https://dl.bintray.com/mitchellh/consul/0.5.2_web_ui.zip && \
+#          unzip 0.5.2_web_ui.zip && rm 0.5.2_web_ui.zip
+#   tags: [consul]
+
+# - file: path={{ consul_ui_dir }} owner={{ consul_user }} state=directory
+#   become: yes
+#   tags: [consul]
+
+# - file: path={{ consul_config_base_dir }}/{{ item }} owner={{ consul_user }} state=directory
+#   become: yes
+#   with_items:
+#     - server
+#     - client
+#   tags: [consul]
+
+# - file: path={{ consul_persistent_data_dir }} owner={{ consul_user }} state=directory
+#   become: yes
+#   tags: [consul]
+
+# - template:
+#     src: "{{ item }}.json.j2"
+#     dest: "{{ consul_config_base_dir }}/{{ item }}/config.json"
+#     owner: "{{ consul_user }}"
+#   with_items:
+#     - server
+#     - client
+#   become: yes
+#   tags: [consul]
+
+# - template:
+#    src: "{{ item }}.upstart.conf.j2"
+#    dest: "/etc/init/{{ item }}.conf"
+#   with_items:
+#     - consul_server
+#     # - consul_client
+#   become: yes
+#   tags: [consul, server]
+
+
+- shell: docker pull gliderlabs/registrator:latest
+  tags: [consul, registrator]
+  become: yes
+
+- template:
+   src: registrator.upstart.conf.j2
+   dest: /etc/init/registrator.conf
+  become: yes
+  tags: [upstart, registrator, consul]

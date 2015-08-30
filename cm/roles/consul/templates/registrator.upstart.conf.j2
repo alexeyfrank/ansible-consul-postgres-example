@@ -24,7 +24,7 @@ script
         -v /var/run/docker.sock:/tmp/docker.sock \
         --net=host \
         gliderlabs/registrator:latest \
-        consul://{{n1_ip}}:8500
+        consul://0.0.0.0:8500
 end script
 
 

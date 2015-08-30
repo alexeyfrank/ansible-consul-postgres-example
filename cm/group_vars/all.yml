@@ -1,0 +1,19 @@
+run_user: vagrant
+docker_ip: "172.17.42.1"
+consul_data_dir: "/var/tmp/consul"
+
+postgres_user: web_test
+postgres_database: web_test
+postgres_password: '12345'
+postgres_password_md5: 'md5f813067c8afde388f4a1d59c79cebfe7'
+postgres_data: /volumes/postgres_data
+postgres_replication_user: replication
+postgres_replication_password: replication_password
+postgres_master_dns: "postgres-master.service.consul"
+
+consul_bootstrap_expect: 3
+consul_servers:
+  - "172.20.20.10"
+  - "172.20.20.11"
+  - "172.20.20.12"
+

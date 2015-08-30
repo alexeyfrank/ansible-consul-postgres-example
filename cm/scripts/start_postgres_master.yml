@@ -1,0 +1,14 @@
+- hosts: master
+  gather_facts: yes
+  tasks:
+    - name: update postgres role
+      become: yes
+      lineinfile:
+        regexp: "POSTGRES_ROLE"
+        line: "POSTGRES_ROLE=master"
+        dest: /etc/environment
+        backup: yes
+        state: present
+
+    - shell: sudo service postgres restart
+      become: yes

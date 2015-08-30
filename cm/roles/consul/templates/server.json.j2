@@ -1,0 +1,13 @@
+{
+    "bootstrap_expect": {{ consul_bootstrap_expect }},
+    "server": true,
+    "datacenter": "{{ consul_datacenter }}",
+    "data_dir": "{{ consul_persistent_data_dir }}",
+    "encrypt": "{{ consul_secret }}",
+    "log_level": "INFO",
+    "enable_syslog": true,
+    "ui_dir": "{{ consul_ui_dir }}",
+    "client_addr": "0.0.0.0",
+    "advertise_addr": "{{ ansible_eth1.ipv4.address }}",
+    "start_join": {{ consul_servers | to_nice_json }}
+}

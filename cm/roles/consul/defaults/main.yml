@@ -1,0 +1,10 @@
+consul_persistent_data_dir: /var/consul
+consul_user: consul
+consul_group: consul
+consul_config_base_dir: /etc/consul.d
+consul_datacenter: datacenter1
+consul_secret: "X4SYOinf2pTAcAHRhpj7dA=="
+consul_ui_dir: /home/consul/dist
+consul_servers: []
+
+consul_watches: []

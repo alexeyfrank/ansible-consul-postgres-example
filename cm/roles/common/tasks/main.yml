@@ -1,0 +1,55 @@
+- group: name={{ item }} state=present system=yes
+  become: yes
+  with_items:
+    - docker
+
+- name: create users
+  become: yes
+  user: name={{ item }} shell=/bin/bash groups=docker
+  with_items:
+    - "{{ run_user }}"
+
+- file: path=/home/{{ item }}/.ssh owner={{ item }} state=directory
+  become: yes
+  with_items:
+    - "{{ run_user }}"
+
+- name: set locale
+  become: yes
+  lineinfile:
+    dest: /etc/environment
+    regexp: 'LC_ALL'
+    line: 'LC_ALL="en_US.UTF-8"'
+    state: present
+
+- shell: apt-get install -y linux-image-extra-$(uname -r)
+  become: yes
+  tags: [apt,aufs]
+
+- apt: name=dnsmasq update_cache=yes
+  become: yes
+  tags: [apt,dns]
+
+- shell: echo "server=/consul/127.0.0.1#8600" > /etc/dnsmasq.d/10-consul
+  become: yes
+  tags: [apt,dns]
+
+
+# - shell: echo "DOCKER_OPTS='--dns 172.17.42.1 --dns 8.8.8.8 --dns-search service.consul'" >> /etc/default/docker
+#   become: yes
+
+- copy: src=files/{{ item }} dest=/home/{{ run_user }}/.ssh/{{ item }} owner={{ run_user }} mode=0600
+  become: yes
+  with_items:
+    - id_rsa
+    - id_rsa.pub
+  tags: [keys]
+
+- name: Add ssh user keys
+  become: yes
+  authorized_key:
+    user: '{{ item }}'
+    key: "{{ lookup('file', 'files/id_rsa.pub') }}"
+  tags: [keys]
+  with_items:
+    - "{{ run_user }}"

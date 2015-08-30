@@ -18,11 +18,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       v.cpus = 1
     end
 
-    n1.vm.provision 'ansible' do |ansible|
-      ansible.playbook = 'cm/vagrant.yml'
-      ansible.tags = 'n1'
-      # ansible.verbose = 'vvvv'
-    end
+    # n1.vm.provision 'ansible' do |ansible|
+    #   ansible.playbook = 'cm/vagrant.yml'
+    #   ansible.tags = 'n1'
+    #   # ansible.verbose = 'vvvv'
+    # end
 
   end
 
@@ -36,11 +36,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       v.memory = 1024
       v.cpus = 1
     end
+  end
 
-    n2.vm.provision 'ansible' do |ansible|
-      ansible.playbook = 'cm/vagrant.yml'
-      ansible.tags = 'n2'
-      # ansible.verbose = 'vvvv'
+  config.vm.define "n3" do |n2|
+    n2.vm.hostname = "n3"
+    n2.vm.network "private_network", ip: "172.20.20.12"
+    n2.vm.synced_folder '.', '/vagrant'
+
+    n2.vm.provider 'virtualbox' do |v, override|
+      override.vm.box = 'ubuntu/trusty64'
+      v.memory = 1024
+      v.cpus = 1
     end
   end
 end

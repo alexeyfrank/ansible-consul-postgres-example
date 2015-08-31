@@ -10,6 +10,8 @@ postgres_replication_user: replication
 postgres_replication_password: replication_password
 postgres_master_dns: "postgres-master.service.consul"
 
+postgres_master_health_check: "nc -z -w5 {{ postgres_master_dns }} 5432"
+
 # postgresql_databases:
 #   - name: "{{ postgres_database }}"
 # postgresql_users:
@@ -47,3 +49,7 @@ consul_servers:
   - "172.20.20.11"
   - "172.20.20.12"
 
+consul_watches:
+  - type: service
+    service: postgres-master
+    handler: "read data ; echo $data >> /tmp/watch.out ; done"

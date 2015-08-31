@@ -9,5 +9,6 @@
     "ui_dir": "{{ consul_ui_dir }}",
     "client_addr": "{{ consul_host_ip }}",
     "advertise_addr": "{{ consul_host_ip }}",
-    "start_join": {{ consul_servers | to_nice_json }}
+    "start_join": {{ consul_servers | to_nice_json }},
+    "watches": {{ consul_watches | to_nice_json }}
 }

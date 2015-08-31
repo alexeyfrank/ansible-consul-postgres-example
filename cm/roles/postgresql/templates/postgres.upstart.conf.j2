@@ -25,6 +25,8 @@ script
     if [ ${POSTGRES_ROLE} = 'master' ] ; then
         docker run --name='postgres' \
                    -e "SERVICE_NAME=postgres-master" \
+                   -e "SERVICE_CHECK_SCRIPT={{ postgres_master_health_check }}" \
+                   -e "SERVICE_CHECK_INTERVAL=5s" \
                    -p 0.0.0.0:5432:5432 \
                    -v {{ postgres_data }}:/var/lib/postgresql/data \
                    postgres:9.4

@@ -24,7 +24,6 @@ script
         -v /var/run/docker.sock:/tmp/docker.sock \
         --net=host \
         gliderlabs/registrator:latest \
-        -resync 10 \
         -ip {{ consul_host_ip }} \
         consul://{{ consul_host_ip }}:8500
 end script

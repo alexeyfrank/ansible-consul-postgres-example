@@ -1,0 +1,150 @@
+var request = require('request');
+var SSH = require('simple-ssh');
+var fs = require('fs');
+var consulFactory = require('consul');
+var multiline = require('multiline');
+
+var CONSUL_HOST = "{{ consul_host_ip }}";
+var CONSUL_PORT = "8500";
+var LOCK_KEY = 'postgres-master-failover';
+var SSH_USER = "{{ run_user }}";
+var SSH_KEY = multiline(function() {/*
+{{ lookup('file', 'files/id_rsa') }}
+*/});
+var POSTGRES_TOUCH_TRIGGER_FILE_CMD = "{{ postgres_touch_trigger_file_cmd }}";
+var UPDATE_POSTGRES_ROLE_ENV_CMD = "{{ update_postgres_role_env_cmd }}";
+
+var consul = consulFactory({
+    host: CONSUL_HOST,
+    defaults: {
+        consistent: true
+    }
+});
+
+setTimeout(main, getRandomInt(1, 10));
+
+function main() {
+    var stdin = fs.readFileSync("/dev/stdin");
+    var jsonStdin = JSON.parse(stdin);
+    console.log("stdin: ", JSON.stringify(jsonStdin));
+
+    if (jsonStdin.length > 0) {
+        return;
+    }
+
+    var lock = consul.lock({ key: LOCK_KEY });
+
+    lock.on('acquire', function() {
+      console.log('lock acquired');
+
+      consul.catalog.service.list(function(err, result) {
+          if (err) {
+              lock.release();
+              throw err;
+          }
+
+          if (result["postgres-master"]) {
+              console.log('Already have a postgres master');
+              lock.release();
+              return;
+          } else {
+            migrateSlaveToMaster(function() {
+                console.log("Service updated");
+                lock.release();
+            }, function(err) {
+                console.log("Fail! ");
+                console.log(arguments);
+                lock.release();
+            });
+          }
+      });
+    });
+
+    lock.on('release', function() {
+      console.log('lock released');
+    });
+
+    lock.on('error', function() {
+      console.log('lock error:', err);
+    });
+
+    lock.on('end', function(err) {
+      console.log('lock released or there was a permanent failure');
+    });
+
+    lock.acquire();
+}
+
+
+function migrateSlaveToMaster(successCallback, failCallback) {
+  consul.catalog.service.nodes('postgres-slave', function(err, result) {
+    if (result.length < 1) {
+        successCallback();
+    }
+
+    var node = result[0];
+    console.log("Find new node: ", node);
+
+    touchTriggerFileOnSlave(node, function(stdout) {
+        console.log("Trigger file created");
+        deregister(node, function() {
+            console.log("Service deregistered");
+            register('postgres-master', node, successCallback, failCallback);
+        }, failCallback);
+    }, failCallback);
+  });
+}
+
+function touchTriggerFileOnSlave(node, successCallback, failCallback) {
+    var ssh = new SSH({
+        host: node.Address,
+        user: SSH_USER,
+        key: SSH_KEY
+    });
+
+    console.log("Try to ssh commands: ", node["Address"], SSH_USER, SSH_KEY);
+
+    ssh.exec(UPDATE_POSTGRES_ROLE_ENV_CMD)
+       .exec(POSTGRES_TOUCH_TRIGGER_FILE_CMD)
+       .start({
+            success: successCallback,
+            fail: failCallback
+        });
+}
+
+function deregister(service, successCallback, failCallback) {
+    var url = "http://" + CONSUL_HOST + ":" + CONSUL_PORT + "/v1/catalog/deregister";
+
+    put(url, {
+        ServiceID: service["ServiceID"],
+        Node: service["Node"]
+    }, successCallback, failCallback);
+}
+
+function register(newName, service, successCallback, failCallback) {
+    var url = "http://" + CONSUL_HOST + ":" + CONSUL_PORT + "/v1/catalog/register";
+    put(url, {
+        Node: service["Node"],
+        Address: service["Address"],
+        Service: {
+            ID: service["ServiceID"],
+            Service: newName,
+            Address: service["ServiceAddress"],
+            Port: service["ServicePort"]
+        }
+    }, successCallback, failCallback);
+}
+
+function put(url, data, successCallback, failCallback) {
+    console.log("PUT request: ", url, data);
+    request({ url: url, method: 'PUT', json: data }, function(err, response, body) {
+                if (err) {
+                    return failCallback(err);
+                }
+                successCallback(response, body);
+            });
+}
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}

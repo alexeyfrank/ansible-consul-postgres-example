@@ -1,3 +1,4 @@
+
 # - apt: name=unzip state=present update_cache=yes
 #   become: yes
 #   tags: [consul]
@@ -33,6 +34,10 @@
 #     - client
 #   tags: [consul]
 
+- file: path={{ consul_config_base_dir }}/handlers owner={{ consul_user }} state=directory
+  become: yes
+  tags: [consul]
+
 # - file: path={{ consul_persistent_data_dir }} owner={{ consul_user }} state=directory
 #   become: yes
 #   tags: [consul]
@@ -40,6 +45,25 @@
 # - apt: name=dnsmasq update_cache=yes
 #   become: yes
 #   tags: [apt,dns]
+
+# - shell: curl -sL https://deb.nodesource.com/setup | sudo bash -
+#   become: yes
+#   tags: [apt,node, consul]
+
+# - apt: name=nodejs update_cache=yes
+#   become: yes
+#   tags: [apt,node, consul]
+
+- shell: npm i -g consul simple-ssh request  multiline
+  become: yes
+  tags: [apt,node, consul]
+
+- template:
+    src: postgres_master_failover.sh.j2
+    dest: /etc/consul.d/handlers/postgres_master_failover.sh
+    mode: 775
+  become: yes
+  tags: [upstart, registrator, consul]
 
 - shell: echo "server=/consul/{{ consul_host_ip }}#8600" > /etc/dnsmasq.d/10-consul
   become: yes
@@ -54,21 +78,15 @@
   become: yes
   tags: [consul]
 
+# - shell: docker pull gliderlabs/registrator:latest
+#   tags: [consul, registrator]
+#   become: yes
+
 - template:
    src: "{{ item }}.upstart.conf.j2"
    dest: "/etc/init/{{ item }}.conf"
   with_items:
     - consul_server
+    - registrator
   become: yes
   tags: [consul, server]
-
-
-- shell: docker pull gliderlabs/registrator:latest
-  tags: [consul, registrator]
-  become: yes
-
-- template:
-   src: registrator.upstart.conf.j2
-   dest: /etc/init/registrator.conf
-  become: yes
-  tags: [upstart, registrator, consul]

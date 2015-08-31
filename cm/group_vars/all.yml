@@ -52,4 +52,4 @@ consul_servers:
 consul_watches:
   - type: service
     service: postgres-master
-    handler: "read data ; echo $data >> /tmp/watch.out ; done"
+    handler: "NODE_PATH=/usr/lib/node_modules node --harmony {{ consul_config_base_dir }}/handlers/postgres_master_failover.sh"

@@ -11,3 +11,5 @@ consul_servers: []
 consul_watches: []
 
 consul_host_ip: "{{ ansible_eth1.ipv4.address }}"
+postgres_touch_trigger_file_cmd: "docker run -v {{ postgres_data }}:/var/lib/postgresql/data postgres:9.4 touch /var/lib/postgresql/data/postgresql.trigger"
+update_postgres_role_env_cmd: "sed -i 's/^POSTGRES_ROLE.*/POSTGRES_ROLE=slave/' /etc/environment"

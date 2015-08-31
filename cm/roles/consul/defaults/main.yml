@@ -1,3 +1,4 @@
+consul_eth: eth1
 consul_persistent_data_dir: /var/consul
 consul_user: consul
 consul_group: consul
@@ -8,3 +9,5 @@ consul_ui_dir: /home/consul/dist
 consul_servers: []
 
 consul_watches: []
+
+consul_host_ip: "{{ ansible_eth1.ipv4.address }}"

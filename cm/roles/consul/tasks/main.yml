@@ -37,24 +37,30 @@
 #   become: yes
 #   tags: [consul]
 
-# - template:
-#     src: "{{ item }}.json.j2"
-#     dest: "{{ consul_config_base_dir }}/{{ item }}/config.json"
-#     owner: "{{ consul_user }}"
-#   with_items:
-#     - server
-#     - client
+# - apt: name=dnsmasq update_cache=yes
 #   become: yes
-#   tags: [consul]
+#   tags: [apt,dns]
 
-# - template:
-#    src: "{{ item }}.upstart.conf.j2"
-#    dest: "/etc/init/{{ item }}.conf"
-#   with_items:
-#     - consul_server
-#     # - consul_client
-#   become: yes
-#   tags: [consul, server]
+- shell: echo "server=/consul/{{ consul_host_ip }}#8600" > /etc/dnsmasq.d/10-consul
+  become: yes
+  tags: [apt,dns]
+
+- template:
+    src: "{{ item }}.json.j2"
+    dest: "{{ consul_config_base_dir }}/{{ item }}/config.json"
+    owner: "{{ consul_user }}"
+  with_items:
+    - server
+  become: yes
+  tags: [consul]
+
+- template:
+   src: "{{ item }}.upstart.conf.j2"
+   dest: "/etc/init/{{ item }}.conf"
+  with_items:
+    - consul_server
+  become: yes
+  tags: [consul, server]
 
 
 - shell: docker pull gliderlabs/registrator:latest

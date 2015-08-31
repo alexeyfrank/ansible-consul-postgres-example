@@ -1,6 +1,5 @@
 run_user: vagrant
 docker_ip: "172.17.42.1"
-consul_data_dir: "/var/tmp/consul"
 
 postgres_user: web_test
 postgres_database: web_test
@@ -10,6 +9,37 @@ postgres_data: /volumes/postgres_data
 postgres_replication_user: replication
 postgres_replication_password: replication_password
 postgres_master_dns: "postgres-master.service.consul"
+
+# postgresql_databases:
+#   - name: "{{ postgres_database }}"
+# postgresql_users:
+#   - name: "{{ postgres_user }}"
+#     pass: "{{ postgres_password }}"
+#   - name: "{{ postgres_replication_user }}"
+#     pass: "{{ postgres_replication_password }}"
+# postgresql_user_privileges:
+#   - name: "{{ postgres_user }}"                   # user name
+#     db: "{{ postgres_database }}"                  # database
+#     priv: "ALL"                 # privilege string format: example: INSERT,UPDATE/table:SELECT/anothertable:ALL
+#     role_attr_flags: "CREATEDB,LOGIN" # role attribute flags
+#   - name: "{{ postgres_replication_user }}"                   # user name
+#     role_attr_flags: "REPLICATION,LOGIN" # role attribute flags
+# postgresql_listen_addresses:
+#   - '*'
+
+# postgresql_wal_level: hot_standby
+# postgresql_hot_standby: on
+# postgresql_max_wal_senders: 5
+# postgresql_max_replication_slots: 5
+
+# postgresql_pg_hba_default:
+#   - { type: local, database: all, user: '{{ postgresql_admin_user }}', address: '', method: '{{ postgresql_default_auth_method }}', comment: '' }
+#   - { type: local, database: all, user: all, address: '',             method: '{{ postgresql_default_auth_method }}', comment: '"local" is for Unix domain socket connections only' }
+#   - { type: host,  database: all, user: all, address: '127.0.0.1/32', method: '{{ postgresql_default_auth_method }}', comment: 'IPv4 local connections:' }
+#   - { type: host,  database: all, user: all, address: '::1/128',      method: '{{ postgresql_default_auth_method }}', comment: 'IPv6 local connections:' }
+#   - { type: host,  database: "{{ postgres_database }}", user: "{{ postgres_user }}", address: '0.0.0.0/0',      method: 'md5' }
+#   - { type: host,  database: "{{ postgres_replication_user }}", user: "{{ postgres_replication_user }}", address: '0.0.0.0/0',      method: 'md5' }
+
 
 consul_bootstrap_expect: 3
 consul_servers:

@@ -7,7 +7,7 @@
     "log_level": "INFO",
     "enable_syslog": true,
     "ui_dir": "{{ consul_ui_dir }}",
-    "client_addr": "0.0.0.0",
-    "advertise_addr": "{{ ansible_eth1.ipv4.address }}",
+    "client_addr": "{{ consul_host_ip }}",
+    "advertise_addr": "{{ consul_host_ip }}",
     "start_join": {{ consul_servers | to_nice_json }}
 }

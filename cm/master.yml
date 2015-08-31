@@ -1,7 +1,7 @@
 - hosts: master
   gather_facts: yes
   roles:
-    - { role: angstwad.docker_ubuntu, become: yes }
-    - { role: common, tags: [master], become: yes, type: master }
+    # - { role: angstwad.docker_ubuntu, become: yes }
+    # - { role: common, tags: [master], become: yes, type: master }
     - { role: consul, tags: [consul, primary], become: yes }
-    - { role: postgresql, tags: [postgres, master], become: yes }
+    # - { role: postgresql, tags: [postgres, master], become: yes }

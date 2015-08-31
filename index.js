@@ -1,33 +1,36 @@
 var http = require('http');
 var pg = require('pg');
+var dns = require('dns');
 
-var conString = "postgres://web_test:12345@postgres-master.service.consul/web_test";
+var conString = "";
+var client = null;
+conString = "postgres://web_test:12345@postgres-master.service.consul/web_test";
+client = new pg.Client(conString);
 
-var client = new pg.Client(conString);
-
-client.connect(function(err) {
-  if(err) {
-    return console.error('could not connect to postgres', err);
-  }
-  client.query('SELECT NOW() AS "theTime"', function(err, result) {
+function query(client, callback) {
+  client.connect(function(err) {
     if(err) {
-      return console.error('error running query', err);
+      return console.error('could not connect to postgres', err);
     }
-    console.log(result.rows[0].theTime);
-    //output: Tue Jan 15 2013 19:12:47 GMT-600 (CST)
-    client.end();
+    client.query('SELECT NOW() AS "theTime"', function(err, result) {
+      if(err) {
+        return console.error('error running query', err);
+      }
+      callback(result);
+      client.end();
+    });
   });
-});
+}
 
 // Configure our HTTP server to respond with Hello World to all requests.
 var server = http.createServer(function (request, response) {
   response.writeHead(200, {"Content-Type": "text/plain"});
-  response.end("Hello World\n");
-  console.log("hello world");
+  query(client, function(result) {
+      console.log(result.rows[0].theTime);
+      response.write(result.rows[0].theTime + "\n");
+      response.end("Hello World\n");
+  });
 });
 
-// Listen on port 8000, IP defaults to 127.0.0.1
 server.listen(8080, "0.0.0.0");
-
-// Put a friendly message on the terminal
 console.log("Server running at http://127.0.0.1:8080/");

@@ -13,6 +13,7 @@ var SSH_KEY = multiline(function() {/*
 */});
 var POSTGRES_TOUCH_TRIGGER_FILE_CMD = "{{ postgres_touch_trigger_file_cmd }}";
 var UPDATE_POSTGRES_ROLE_ENV_CMD = "{{ update_postgres_role_env_cmd }}";
+var POSTGRES_RM_TRIGGER_FILE_CMD = "{{ postgres_rm_trigger_file_cmd }}";
 
 var consul = consulFactory({
     host: CONSUL_HOST,
@@ -46,7 +47,6 @@ function main() {
           if (result["postgres-master"]) {
               console.log('Already have a postgres master');
               lock.release();
-              return;
           } else {
             migrateSlaveToMaster(function() {
                 console.log("Service updated");
@@ -102,10 +102,11 @@ function touchTriggerFileOnSlave(node, successCallback, failCallback) {
         key: SSH_KEY
     });
 
-    console.log("Try to ssh commands: ", node["Address"], SSH_USER, SSH_KEY);
+    console.log("Try to ssh commands: ", node["Address"], SSH_USER);
 
     ssh.exec(UPDATE_POSTGRES_ROLE_ENV_CMD)
        .exec(POSTGRES_TOUCH_TRIGGER_FILE_CMD)
+       .exec(POSTGRES_RM_TRIGGER_FILE_CMD)
        .start({
             success: successCallback,
             fail: failCallback
@@ -138,7 +139,7 @@ function register(newName, service, successCallback, failCallback) {
 function put(url, data, successCallback, failCallback) {
     console.log("PUT request: ", url, data);
     request({ url: url, method: 'PUT', json: data }, function(err, response, body) {
-                if (err) {
+                if (err || response.statusCode != 200) {
                     return failCallback(err);
                 }
                 successCallback(response, body);

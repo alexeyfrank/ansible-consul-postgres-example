@@ -1,3 +1,13 @@
+- hosts: master
+  gather_facts: yes
+  tasks:
+    - shell: rm -rf {{ postgres_data }}/{{ item }}
+      become: yes
+      with_items:
+        - postgresql.trigger
+        - recovery.conf
+        - recovery.done
+
 - hosts: slave
   gather_facts: yes
   tasks:

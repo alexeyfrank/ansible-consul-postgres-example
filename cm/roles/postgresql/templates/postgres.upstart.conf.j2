@@ -23,6 +23,10 @@ script
     export POSTGRES_ROLE
 
     if [ ${POSTGRES_ROLE} = 'master' ] ; then
+        sudo rm -rf {{ postgres_data }}/postgresql.trigger
+        sudo rm -rf {{ postgres_data }}/recovery.conf
+        sudo rm -rf {{ postgres_data }}/recovery.done
+
         docker run --name='postgres' \
                    -e "SERVICE_NAME=postgres-master" \
                    -p 0.0.0.0:5432:5432 \
@@ -32,10 +36,6 @@ script
 
     if [ ${POSTGRES_ROLE} = 'slave' ] ; then
         sudo rm -rf {{ postgres_data }}
-        # docker run \
-        #            -v {{ postgres_data }}:/var/lib/postgresql/data \
-        #            postgres:9.4 \
-        #             rm -rf /var/lib/postgresql/data/*
 
         docker run \
                    -v {{ postgres_data }}:/var/lib/postgresql/data \
@@ -65,6 +65,3 @@ script
                    postgres:9.4
     fi
 end script
-
-
-

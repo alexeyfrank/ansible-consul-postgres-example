@@ -34,9 +34,9 @@
 #     - client
 #   tags: [consul]
 
-- file: path={{ consul_config_base_dir }}/handlers owner={{ consul_user }} state=directory
-  become: yes
-  tags: [consul]
+# - file: path={{ consul_config_base_dir }}/handlers owner={{ consul_user }} state=directory
+#   become: yes
+#   tags: [consul]
 
 # - file: path={{ consul_persistent_data_dir }} owner={{ consul_user }} state=directory
 #   become: yes
@@ -54,9 +54,9 @@
 #   become: yes
 #   tags: [apt,node, consul]
 
-- shell: npm i -g consul simple-ssh request  multiline
-  become: yes
-  tags: [apt,node, consul]
+# - shell: npm i -g consul simple-ssh request  multiline
+#   become: yes
+#   tags: [apt,node, consul]
 
 - template:
     src: postgres_master_failover.sh.j2
@@ -65,28 +65,28 @@
   become: yes
   tags: [upstart, registrator, consul]
 
-- shell: echo "server=/consul/{{ consul_host_ip }}#8600" > /etc/dnsmasq.d/10-consul
-  become: yes
-  tags: [apt,dns]
+# - shell: echo "server=/consul/{{ consul_host_ip }}#8600" > /etc/dnsmasq.d/10-consul
+#   become: yes
+#   tags: [apt,dns]
 
-- template:
-    src: "{{ item }}.json.j2"
-    dest: "{{ consul_config_base_dir }}/{{ item }}/config.json"
-    owner: "{{ consul_user }}"
-  with_items:
-    - server
-  become: yes
-  tags: [consul]
+# - template:
+#     src: "{{ item }}.json.j2"
+#     dest: "{{ consul_config_base_dir }}/{{ item }}/config.json"
+#     owner: "{{ consul_user }}"
+#   with_items:
+#     - server
+#   become: yes
+#   tags: [consul]
 
 # - shell: docker pull gliderlabs/registrator:latest
 #   tags: [consul, registrator]
 #   become: yes
 
-- template:
-   src: "{{ item }}.upstart.conf.j2"
-   dest: "/etc/init/{{ item }}.conf"
-  with_items:
-    - consul_server
-    - registrator
-  become: yes
-  tags: [consul, server]
+# - template:
+#    src: "{{ item }}.upstart.conf.j2"
+#    dest: "/etc/init/{{ item }}.conf"
+#   with_items:
+#     - consul_server
+#     - registrator
+#   become: yes
+#   tags: [consul, server]
